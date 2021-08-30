@@ -52,6 +52,12 @@ type Manager interface {
 	// GetDeleteItemAction returns the delete item action plugin for name.
 	GetDeleteItemAction(name string) (velero.DeleteItemAction, error)
 
+	// GetPreBackupActions returns the pre-backup action plugins.
+	GetPreBackupActions() ([]velero.PreBackupAction, error)
+
+	// GetPreBackupAction returns the pre-backup action plugin for name.
+	GetPreBackupAction(name string) (velero.PreBackupAction, error)
+
 	// CleanupClients terminates all of the Manager's running plugin processes.
 	CleanupClients()
 }
@@ -187,6 +193,40 @@ func (m *manager) GetBackupItemAction(name string) (velero.BackupItemAction, err
 	}
 
 	r := newRestartableBackupItemAction(name, restartableProcess)
+	return r, nil
+}
+
+// GetPreBackupActions returns all pre-backup actions as restartablePreBackupActions.
+func (m *manager) GetPreBackupActions() ([]velero.PreBackupAction, error) {
+	list := m.registry.List(framework.PluginKindPreBackupAction)
+
+	actions := make([]velero.PreBackupAction, 0, len(list))
+
+	for i := range list {
+		id := list[i]
+
+		r, err := m.GetPreBackupAction(id.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		actions = append(actions, r)
+	}
+
+	return actions, nil
+}
+
+// GetPreBackupAction returns a restartablePreBackupAction for name.
+func (m *manager) GetPreBackupAction(name string) (velero.PreBackupAction, error) {
+	name = sanitizeName(name)
+
+	restartableProcess, err := m.getRestartableProcess(framework.PluginKindPreBackupAction, name)
+	if err != nil {
+		return nil, err
+	}
+
+	r := newRestartablePreBackupAction(name, restartableProcess)
+
 	return r, nil
 }
 

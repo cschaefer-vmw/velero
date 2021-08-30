@@ -9,6 +9,7 @@ It is generated from these files:
 	DeleteItemAction.proto
 	ObjectStore.proto
 	PluginLister.proto
+	PreBackupAction.proto
 	RestoreItemAction.proto
 	Shared.proto
 	VolumeSnapshotter.proto
@@ -36,6 +37,7 @@ It has these top-level messages:
 	ObjectStoreInitRequest
 	PluginIdentifier
 	ListPluginsResponse
+	PreBackupActionExecuteRequest
 	RestoreItemActionExecuteRequest
 	RestoreItemActionExecuteResponse
 	RestoreItemActionAppliesToRequest

@@ -570,6 +570,19 @@ func (c *backupController) runBackup(backup *pkgbackup.Request) error {
 		return err
 	}
 
+	backupLog.Info("Getting PreBackup actions")
+	preBackupActions, err := pluginManager.GetPreBackupActions()
+	if err != nil {
+		return err
+	}
+
+	for _, preBackupAction := range preBackupActions {
+		err := preBackupAction.Execute(backup.Backup)
+		if err != nil {
+			return err
+		}
+	}
+
 	backupLog.Info("Setting up backup store to check for backup existence")
 	backupStore, err := c.backupStoreGetter.Get(backup.StorageLocation, pluginManager, backupLog)
 	if err != nil {

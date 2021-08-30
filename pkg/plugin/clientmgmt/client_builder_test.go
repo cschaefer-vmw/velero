@@ -61,6 +61,7 @@ func TestClientConfig(t *testing.T) {
 		AllowedProtocols: []hcplugin.Protocol{hcplugin.ProtocolGRPC},
 		Plugins: map[string]hcplugin.Plugin{
 			string(framework.PluginKindBackupItemAction):  framework.NewBackupItemActionPlugin(framework.ClientLogger(logger)),
+			string(framework.PluginKindPreBackupAction):   framework.NewPreBackupActionPlugin(framework.ClientLogger(logger)),
 			string(framework.PluginKindVolumeSnapshotter): framework.NewVolumeSnapshotterPlugin(framework.ClientLogger(logger)),
 			string(framework.PluginKindObjectStore):       framework.NewObjectStorePlugin(framework.ClientLogger(logger)),
 			string(framework.PluginKindPluginLister):      &framework.PluginListerPlugin{},

@@ -68,6 +68,7 @@ func (b *clientBuilder) clientConfig() *hcplugin.ClientConfig {
 		AllowedProtocols: []hcplugin.Protocol{hcplugin.ProtocolGRPC},
 		Plugins: map[string]hcplugin.Plugin{
 			string(framework.PluginKindBackupItemAction):  framework.NewBackupItemActionPlugin(framework.ClientLogger(b.clientLogger)),
+			string(framework.PluginKindPreBackupAction):   framework.NewPreBackupActionPlugin(framework.ClientLogger(b.clientLogger)),
 			string(framework.PluginKindVolumeSnapshotter): framework.NewVolumeSnapshotterPlugin(framework.ClientLogger(b.clientLogger)),
 			string(framework.PluginKindObjectStore):       framework.NewObjectStorePlugin(framework.ClientLogger(b.clientLogger)),
 			string(framework.PluginKindPluginLister):      &framework.PluginListerPlugin{},

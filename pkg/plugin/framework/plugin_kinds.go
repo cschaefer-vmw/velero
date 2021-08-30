@@ -35,6 +35,9 @@ const (
 	// PluginKindBackupItemAction represents a backup item action plugin.
 	PluginKindBackupItemAction PluginKind = "BackupItemAction"
 
+	// PluginKindPreBackupAction represents a pre-backup action plugin.
+	PluginKindPreBackupAction PluginKind = "PreBackupAction"
+
 	// PluginKindRestoreItemAction represents a restore item action plugin.
 	PluginKindRestoreItemAction PluginKind = "RestoreItemAction"
 
@@ -52,6 +55,7 @@ func AllPluginKinds() map[string]PluginKind {
 	allPluginKinds[PluginKindObjectStore.String()] = PluginKindObjectStore
 	allPluginKinds[PluginKindVolumeSnapshotter.String()] = PluginKindVolumeSnapshotter
 	allPluginKinds[PluginKindBackupItemAction.String()] = PluginKindBackupItemAction
+	allPluginKinds[PluginKindPreBackupAction.String()] = PluginKindPreBackupAction
 	allPluginKinds[PluginKindRestoreItemAction.String()] = PluginKindRestoreItemAction
 	allPluginKinds[PluginKindDeleteItemAction.String()] = PluginKindDeleteItemAction
 	return allPluginKinds
