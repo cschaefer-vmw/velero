@@ -576,11 +576,10 @@ func (c *backupController) runBackup(backup *pkgbackup.Request) error {
 		return err
 	}
 
-	for _, preBackupAction := range preBackupActions {
-		err := preBackupAction.Execute(backup.Backup)
-		if err != nil {
-			return err
-		}
+	backupLog.Info("Getting PostBackup actions")
+	postBackupActions, err := pluginManager.GetPostBackupActions()
+	if err != nil {
+		return err
 	}
 
 	backupLog.Info("Setting up backup store to check for backup existence")
@@ -597,6 +596,13 @@ func (c *backupController) runBackup(backup *pkgbackup.Request) error {
 			return errors.Wrapf(err, "error checking if backup already exists in object storage")
 		}
 		return errors.Errorf("backup already exists in object storage")
+	}
+
+	for _, preBackupAction := range preBackupActions {
+		err := preBackupAction.Execute(backup.Backup)
+		if err != nil {
+			return err
+		}
 	}
 
 	var fatalErrs []error
@@ -641,6 +647,14 @@ func (c *backupController) runBackup(backup *pkgbackup.Request) error {
 	}
 
 	recordBackupMetrics(backupLog, backup.Backup, backupFile, c.metrics)
+
+	for _, postBackupAction := range postBackupActions {
+		err := postBackupAction.Execute(backup.Backup)
+		if err != nil {
+			fatalErrs = append(fatalErrs, err)
+			backupLog.Error(err)
+		}
+	}
 
 	if err := gzippedLogFile.Close(); err != nil {
 		c.logger.WithField(Backup, kubeutil.NamespaceAndName(backup)).WithError(err).Error("error closing gzippedLogFile")

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 the Velero contributors.
+Copyright 2020-2021 the Velero contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -57,6 +57,12 @@ type Manager interface {
 
 	// GetPreBackupAction returns the pre-backup action plugin for name.
 	GetPreBackupAction(name string) (velero.PreBackupAction, error)
+
+	// GetPostBackupActions returns the post-backup action plugins.
+	GetPostBackupActions() ([]velero.PostBackupAction, error)
+
+	// GetPostBackupAction returns the post-backup action plugin for name.
+	GetPostBackupAction(name string) (velero.PostBackupAction, error)
 
 	// CleanupClients terminates all of the Manager's running plugin processes.
 	CleanupClients()
@@ -226,6 +232,40 @@ func (m *manager) GetPreBackupAction(name string) (velero.PreBackupAction, error
 	}
 
 	r := newRestartablePreBackupAction(name, restartableProcess)
+
+	return r, nil
+}
+
+// GetPostBackupActions returns all post-backup actions as restartablePostBackupActions.
+func (m *manager) GetPostBackupActions() ([]velero.PostBackupAction, error) {
+	list := m.registry.List(framework.PluginKindPostBackupAction)
+
+	actions := make([]velero.PostBackupAction, 0, len(list))
+
+	for i := range list {
+		id := list[i]
+
+		r, err := m.GetPostBackupAction(id.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		actions = append(actions, r)
+	}
+
+	return actions, nil
+}
+
+// GetPostBackupAction returns a restartablePostBackupAction for name.
+func (m *manager) GetPostBackupAction(name string) (velero.PostBackupAction, error) {
+	name = sanitizeName(name)
+
+	restartableProcess, err := m.getRestartableProcess(framework.PluginKindPostBackupAction, name)
+	if err != nil {
+		return nil, err
+	}
+
+	r := newRestartablePostBackupAction(name, restartableProcess)
 
 	return r, nil
 }

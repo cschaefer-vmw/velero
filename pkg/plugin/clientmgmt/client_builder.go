@@ -1,5 +1,5 @@
 /*
-Copyright 2020 the Velero contributors.
+Copyright 2020-2021 the Velero contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ func (b *clientBuilder) clientConfig() *hcplugin.ClientConfig {
 		Plugins: map[string]hcplugin.Plugin{
 			string(framework.PluginKindBackupItemAction):  framework.NewBackupItemActionPlugin(framework.ClientLogger(b.clientLogger)),
 			string(framework.PluginKindPreBackupAction):   framework.NewPreBackupActionPlugin(framework.ClientLogger(b.clientLogger)),
+			string(framework.PluginKindPostBackupAction):  framework.NewPostBackupActionPlugin(framework.ClientLogger(b.clientLogger)),
 			string(framework.PluginKindVolumeSnapshotter): framework.NewVolumeSnapshotterPlugin(framework.ClientLogger(b.clientLogger)),
 			string(framework.PluginKindObjectStore):       framework.NewObjectStorePlugin(framework.ClientLogger(b.clientLogger)),
 			string(framework.PluginKindPluginLister):      &framework.PluginListerPlugin{},

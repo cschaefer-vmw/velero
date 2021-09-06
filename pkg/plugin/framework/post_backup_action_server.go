@@ -27,19 +27,19 @@ import (
 	"github.com/vmware-tanzu/velero/pkg/plugin/velero"
 )
 
-// PreBackupActionGRPCServer implements the proto-generated PreBackupAction interface, and accepts
+// PostBackupActionGRPCServer implements the proto-generated PostBackupAction interface, and accepts
 // gRPC calls and forwards them to an implementation of the pluggable interface.
-type PreBackupActionGRPCServer struct {
+type PostBackupActionGRPCServer struct {
 	mux *serverMux
 }
 
-func (s *PreBackupActionGRPCServer) getImpl(name string) (velero.PreBackupAction, error) {
+func (s *PostBackupActionGRPCServer) getImpl(name string) (velero.PostBackupAction, error) {
 	impl, err := s.mux.getHandler(name)
 	if err != nil {
 		return nil, err
 	}
 
-	action, ok := impl.(velero.PreBackupAction)
+	action, ok := impl.(velero.PostBackupAction)
 	if !ok {
 		return nil, errors.Errorf("%T is not a pre-backup action", impl)
 	}
@@ -48,7 +48,7 @@ func (s *PreBackupActionGRPCServer) getImpl(name string) (velero.PreBackupAction
 }
 
 // Execute the call to the plugin
-func (s *PreBackupActionGRPCServer) Execute(ctx context.Context, req *proto.PreBackupActionExecuteRequest) (_ *proto.Empty, err error) {
+func (s *PostBackupActionGRPCServer) Execute(ctx context.Context, req *proto.PostBackupActionExecuteRequest) (_ *proto.Empty, err error) {
 	defer func() {
 		if recoveredErr := handlePanic(recover()); recoveredErr != nil {
 			err = recoveredErr

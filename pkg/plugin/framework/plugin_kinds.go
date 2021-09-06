@@ -1,5 +1,5 @@
 /*
-Copyright 2018, 2019 the Velero contributors.
+Copyright 2018, 2019, 2020, 2021 the Velero contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,6 +38,9 @@ const (
 	// PluginKindPreBackupAction represents a pre-backup action plugin.
 	PluginKindPreBackupAction PluginKind = "PreBackupAction"
 
+	// PluginKindPostBackupAction represents a post-backup action plugin.
+	PluginKindPostBackupAction PluginKind = "PostBackupAction"
+
 	// PluginKindRestoreItemAction represents a restore item action plugin.
 	PluginKindRestoreItemAction PluginKind = "RestoreItemAction"
 
@@ -56,6 +59,7 @@ func AllPluginKinds() map[string]PluginKind {
 	allPluginKinds[PluginKindVolumeSnapshotter.String()] = PluginKindVolumeSnapshotter
 	allPluginKinds[PluginKindBackupItemAction.String()] = PluginKindBackupItemAction
 	allPluginKinds[PluginKindPreBackupAction.String()] = PluginKindPreBackupAction
+	allPluginKinds[PluginKindPostBackupAction.String()] = PluginKindPostBackupAction
 	allPluginKinds[PluginKindRestoreItemAction.String()] = PluginKindRestoreItemAction
 	allPluginKinds[PluginKindDeleteItemAction.String()] = PluginKindDeleteItemAction
 	return allPluginKinds

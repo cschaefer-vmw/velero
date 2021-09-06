@@ -178,6 +178,52 @@ func (_m *Manager) GetPreBackupActions() ([]velero.PreBackupAction, error) {
 	return r0, r1
 }
 
+// GetPostBackupAction provides a mock function with given fields: name
+func (_m *Manager) GetPostBackupAction(name string) (velero.PostBackupAction, error) {
+	ret := _m.Called(name)
+
+	var r0 velero.PostBackupAction
+	if rf, ok := ret.Get(0).(func(string) velero.PostBackupAction); ok {
+		r0 = rf(name)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(velero.PostBackupAction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(name)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetPostBackupActions provides a mock function with given fields:
+func (_m *Manager) GetPostBackupActions() ([]velero.PostBackupAction, error) {
+	ret := _m.Called()
+
+	var r0 []velero.PostBackupAction
+	if rf, ok := ret.Get(0).(func() []velero.PostBackupAction); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]velero.PostBackupAction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetRestoreItemAction provides a mock function with given fields: name
 func (_m *Manager) GetRestoreItemAction(name string) (velero.RestoreItemAction, error) {
 	ret := _m.Called(name)

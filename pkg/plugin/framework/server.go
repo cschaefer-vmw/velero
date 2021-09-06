@@ -53,6 +53,13 @@ type Server interface {
 	// RegisterPreBackupActions registers multiple pre-backup actions.
 	RegisterPreBackupActions(map[string]HandlerInitializer) Server
 
+	// RegisterPostBackupAction registers a post-backup action. Accepted format
+	// for the plugin name is <DNS subdomain>/<non-empty name>.
+	RegisterPostBackupAction(pluginName string, initializer HandlerInitializer) Server
+
+	// RegisterPostBackupActions registers multiple post-backup actions.
+	RegisterPostBackupActions(map[string]HandlerInitializer) Server
+
 	// RegisterVolumeSnapshotter registers a volume snapshotter. Accepted format
 	// for the plugin name is <DNS subdomain>/<non-empty name>.
 	RegisterVolumeSnapshotter(pluginName string, initializer HandlerInitializer) Server
@@ -93,6 +100,7 @@ type server struct {
 	featureSet        *veleroflag.StringArray
 	backupItemAction  *BackupItemActionPlugin
 	preBackupAction   *PreBackupActionPlugin
+	postBackupAction  *PostBackupActionPlugin
 	volumeSnapshotter *VolumeSnapshotterPlugin
 	objectStore       *ObjectStorePlugin
 	restoreItemAction *RestoreItemActionPlugin
@@ -110,6 +118,7 @@ func NewServer() Server {
 		featureSet:        &features,
 		backupItemAction:  NewBackupItemActionPlugin(serverLogger(log)),
 		preBackupAction:   NewPreBackupActionPlugin(serverLogger(log)),
+		postBackupAction:  NewPostBackupActionPlugin(serverLogger(log)),
 		volumeSnapshotter: NewVolumeSnapshotterPlugin(serverLogger(log)),
 		objectStore:       NewObjectStorePlugin(serverLogger(log)),
 		restoreItemAction: NewRestoreItemActionPlugin(serverLogger(log)),
@@ -146,6 +155,18 @@ func (s *server) RegisterPreBackupAction(name string, initializer HandlerInitial
 func (s *server) RegisterPreBackupActions(m map[string]HandlerInitializer) Server {
 	for name := range m {
 		s.RegisterPreBackupAction(name, m[name])
+	}
+	return s
+}
+
+func (s *server) RegisterPostBackupAction(name string, initializer HandlerInitializer) Server {
+	s.postBackupAction.register(name, initializer)
+	return s
+}
+
+func (s *server) RegisterPostBackupActions(m map[string]HandlerInitializer) Server {
+	for name := range m {
+		s.RegisterPostBackupAction(name, m[name])
 	}
 	return s
 }
@@ -224,6 +245,7 @@ func (s *server) Serve() {
 	var pluginIdentifiers []PluginIdentifier
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindBackupItemAction, s.backupItemAction)...)
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindPreBackupAction, s.preBackupAction)...)
+	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindPostBackupAction, s.postBackupAction)...)
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindVolumeSnapshotter, s.volumeSnapshotter)...)
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindObjectStore, s.objectStore)...)
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindRestoreItemAction, s.restoreItemAction)...)
@@ -236,6 +258,7 @@ func (s *server) Serve() {
 		Plugins: map[string]plugin.Plugin{
 			string(PluginKindBackupItemAction):  s.backupItemAction,
 			string(PluginKindPreBackupAction):   s.preBackupAction,
+			string(PluginKindPostBackupAction):  s.postBackupAction,
 			string(PluginKindVolumeSnapshotter): s.volumeSnapshotter,
 			string(PluginKindObjectStore):       s.objectStore,
 			string(PluginKindPluginLister):      NewPluginListerPlugin(pluginLister),
