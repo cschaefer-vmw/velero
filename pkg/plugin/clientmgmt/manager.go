@@ -64,6 +64,18 @@ type Manager interface {
 	// GetPostBackupAction returns the post-backup action plugin for name.
 	GetPostBackupAction(name string) (velero.PostBackupAction, error)
 
+	// GetPreRestoreActions returns the pre-restore action plugins.
+	GetPreRestoreActions() ([]velero.PreRestoreAction, error)
+
+	// GetPreRestoreAction returns the pre-restore action plugin for name.
+	GetPreRestoreAction(name string) (velero.PreRestoreAction, error)
+
+	// GetPostRestoreActions returns the post-restore action plugins.
+	GetPostRestoreActions() ([]velero.PostRestoreAction, error)
+
+	// GetPostRestoreAction returns the post-restore action plugin for name.
+	GetPostRestoreAction(name string) (velero.PostRestoreAction, error)
+
 	// CleanupClients terminates all of the Manager's running plugin processes.
 	CleanupClients()
 }
@@ -288,6 +300,72 @@ func (m *manager) GetRestoreItemActions() ([]velero.RestoreItemAction, error) {
 	}
 
 	return actions, nil
+}
+
+// GetPreRestoreActions returns all pre-restore actions as restartablePreRestoreActions.
+func (m *manager) GetPreRestoreActions() ([]velero.PreRestoreAction, error) {
+	list := m.registry.List(framework.PluginKindPreRestoreAction)
+	actions := make([]velero.PreRestoreAction, 0, len(list))
+
+	for i := range list {
+		id := list[i]
+
+		r, err := m.GetPreRestoreAction(id.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		actions = append(actions, r)
+	}
+
+	return actions, nil
+}
+
+// GetPreRestoreAction returns a restartablePreRestoreAction for name.
+func (m *manager) GetPreRestoreAction(name string) (velero.PreRestoreAction, error) {
+	name = sanitizeName(name)
+
+	restartableProcess, err := m.getRestartableProcess(framework.PluginKindPreRestoreAction, name)
+	if err != nil {
+		return nil, err
+	}
+
+	r := newRestartablePreRestoreAction(name, restartableProcess)
+
+	return r, nil
+}
+
+// GetPostRestoreActions returns all post-restore actions as restartablePostRestoreActions.
+func (m *manager) GetPostRestoreActions() ([]velero.PostRestoreAction, error) {
+	list := m.registry.List(framework.PluginKindPostRestoreAction)
+	actions := make([]velero.PostRestoreAction, 0, len(list))
+
+	for i := range list {
+		id := list[i]
+
+		r, err := m.GetPostRestoreAction(id.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		actions = append(actions, r)
+	}
+
+	return actions, nil
+}
+
+// GetPostRestoreAction returns a restartablePostRestoreAction for name.
+func (m *manager) GetPostRestoreAction(name string) (velero.PostRestoreAction, error) {
+	name = sanitizeName(name)
+
+	restartableProcess, err := m.getRestartableProcess(framework.PluginKindPostRestoreAction, name)
+	if err != nil {
+		return nil, err
+	}
+
+	r := newRestartablePostRestoreAction(name, restartableProcess)
+
+	return r, nil
 }
 
 // GetRestoreItemAction returns a restartableRestoreItemAction for name.

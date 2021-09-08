@@ -67,6 +67,8 @@ func TestClientConfig(t *testing.T) {
 			string(framework.PluginKindObjectStore):       framework.NewObjectStorePlugin(framework.ClientLogger(logger)),
 			string(framework.PluginKindPluginLister):      &framework.PluginListerPlugin{},
 			string(framework.PluginKindRestoreItemAction): framework.NewRestoreItemActionPlugin(framework.ClientLogger(logger)),
+			string(framework.PluginKindPreRestoreAction):  framework.NewPreRestoreActionPlugin(framework.ClientLogger(logger)),
+			string(framework.PluginKindPostRestoreAction): framework.NewPostRestoreActionPlugin(framework.ClientLogger(logger)),
 			string(framework.PluginKindDeleteItemAction):  framework.NewDeleteItemActionPlugin(framework.ClientLogger(logger)),
 		},
 		Logger: cb.pluginLogger,

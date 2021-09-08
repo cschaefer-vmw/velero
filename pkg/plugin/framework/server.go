@@ -81,6 +81,20 @@ type Server interface {
 	// RegisterRestoreItemActions registers multiple restore item actions.
 	RegisterRestoreItemActions(map[string]HandlerInitializer) Server
 
+	// RegisterPreRestoreAction registers a pre-restore action. Accepted format
+	// for the plugin name is <DNS subdomain>/<non-empty name>.
+	RegisterPreRestoreAction(pluginName string, initializer HandlerInitializer) Server
+
+	// RegisterPreRestoreActions registers multiple pre-restore actions.
+	RegisterPreRestoreActions(map[string]HandlerInitializer) Server
+
+	// RegisterPostRestoreAction registers a post-restore action. Accepted format
+	// for the plugin name is <DNS subdomain>/<non-empty name>.
+	RegisterPostRestoreAction(pluginName string, initializer HandlerInitializer) Server
+
+	// RegisterPostRestoreActions registers multiple post-restore actions.
+	RegisterPostRestoreActions(map[string]HandlerInitializer) Server
+
 	// RegisterDeleteItemAction registers a delete item action. Accepted format
 	// for the plugin name is <DNS subdomain>/<non-empty name>.
 	RegisterDeleteItemAction(pluginName string, initializer HandlerInitializer) Server
@@ -104,6 +118,8 @@ type server struct {
 	volumeSnapshotter *VolumeSnapshotterPlugin
 	objectStore       *ObjectStorePlugin
 	restoreItemAction *RestoreItemActionPlugin
+	preRestoreAction  *PreRestoreActionPlugin
+	postRestoreAction *PostRestoreActionPlugin
 	deleteItemAction  *DeleteItemActionPlugin
 }
 
@@ -111,7 +127,6 @@ type server struct {
 func NewServer() Server {
 	log := newLogger()
 	features := veleroflag.NewStringArray()
-
 	return &server{
 		log:               log,
 		logLevelFlag:      logging.LogLevelFlag(log.Level),
@@ -122,6 +137,8 @@ func NewServer() Server {
 		volumeSnapshotter: NewVolumeSnapshotterPlugin(serverLogger(log)),
 		objectStore:       NewObjectStorePlugin(serverLogger(log)),
 		restoreItemAction: NewRestoreItemActionPlugin(serverLogger(log)),
+		preRestoreAction:  NewPreRestoreActionPlugin(serverLogger(log)),
+		postRestoreAction: NewPostRestoreActionPlugin(serverLogger(log)),
 		deleteItemAction:  NewDeleteItemActionPlugin(serverLogger(log)),
 	}
 }
@@ -207,6 +224,30 @@ func (s *server) RegisterRestoreItemActions(m map[string]HandlerInitializer) Ser
 	return s
 }
 
+func (s *server) RegisterPreRestoreAction(name string, initializer HandlerInitializer) Server {
+	s.preRestoreAction.register(name, initializer)
+	return s
+}
+
+func (s *server) RegisterPreRestoreActions(m map[string]HandlerInitializer) Server {
+	for name := range m {
+		s.RegisterPreRestoreAction(name, m[name])
+	}
+	return s
+}
+
+func (s *server) RegisterPostRestoreAction(name string, initializer HandlerInitializer) Server {
+	s.postRestoreAction.register(name, initializer)
+	return s
+}
+
+func (s *server) RegisterPostRestoreActions(m map[string]HandlerInitializer) Server {
+	for name := range m {
+		s.RegisterPostRestoreAction(name, m[name])
+	}
+	return s
+}
+
 func (s *server) RegisterDeleteItemAction(name string, initializer HandlerInitializer) Server {
 	s.deleteItemAction.register(name, initializer)
 	return s
@@ -249,8 +290,9 @@ func (s *server) Serve() {
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindVolumeSnapshotter, s.volumeSnapshotter)...)
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindObjectStore, s.objectStore)...)
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindRestoreItemAction, s.restoreItemAction)...)
+	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindPreRestoreAction, s.preRestoreAction)...)
+	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindPostRestoreAction, s.postRestoreAction)...)
 	pluginIdentifiers = append(pluginIdentifiers, getNames(command, PluginKindDeleteItemAction, s.deleteItemAction)...)
-
 	pluginLister := NewPluginLister(pluginIdentifiers...)
 
 	plugin.Serve(&plugin.ServeConfig{
@@ -258,6 +300,8 @@ func (s *server) Serve() {
 		Plugins: map[string]plugin.Plugin{
 			string(PluginKindBackupItemAction):  s.backupItemAction,
 			string(PluginKindPreBackupAction):   s.preBackupAction,
+			string(PluginKindPreRestoreAction):  s.preRestoreAction,
+			string(PluginKindPostRestoreAction): s.postRestoreAction,
 			string(PluginKindPostBackupAction):  s.postBackupAction,
 			string(PluginKindVolumeSnapshotter): s.volumeSnapshotter,
 			string(PluginKindObjectStore):       s.objectStore,

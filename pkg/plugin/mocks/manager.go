@@ -270,6 +270,98 @@ func (_m *Manager) GetRestoreItemActions() ([]velero.RestoreItemAction, error) {
 	return r0, r1
 }
 
+// GetPreRestoreAction provides a mock function with given fields: name
+func (_m *Manager) GetPreRestoreAction(name string) (velero.PreRestoreAction, error) {
+	ret := _m.Called(name)
+
+	var r0 velero.PreRestoreAction
+	if rf, ok := ret.Get(0).(func(string) velero.PreRestoreAction); ok {
+		r0 = rf(name)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(velero.PreRestoreAction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(name)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetPreRestoreActions provides a mock function with given fields:
+func (_m *Manager) GetPreRestoreActions() ([]velero.PreRestoreAction, error) {
+	ret := _m.Called()
+
+	var r0 []velero.PreRestoreAction
+	if rf, ok := ret.Get(0).(func() []velero.PreRestoreAction); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]velero.PreRestoreAction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetPostRestoreAction provides a mock function with given fields: name
+func (_m *Manager) GetPostRestoreAction(name string) (velero.PostRestoreAction, error) {
+	ret := _m.Called(name)
+
+	var r0 velero.PostRestoreAction
+	if rf, ok := ret.Get(0).(func(string) velero.PostRestoreAction); ok {
+		r0 = rf(name)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(velero.PostRestoreAction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(name)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetPostRestoreActions provides a mock function with given fields:
+func (_m *Manager) GetPostRestoreActions() ([]velero.PostRestoreAction, error) {
+	ret := _m.Called()
+
+	var r0 []velero.PostRestoreAction
+	if rf, ok := ret.Get(0).(func() []velero.PostRestoreAction); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]velero.PostRestoreAction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetVolumeSnapshotter provides a mock function with given fields: name
 func (_m *Manager) GetVolumeSnapshotter(name string) (velero.VolumeSnapshotter, error) {
 	ret := _m.Called(name)

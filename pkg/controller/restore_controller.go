@@ -444,6 +444,18 @@ func (c *restoreController) runValidatedRestore(restore *api.Restore, info backu
 		return errors.Wrap(err, "error getting restore item actions")
 	}
 
+	restoreLog.Info("Getting PreRestore actions")
+	preRestoreActions, err := pluginManager.GetPreRestoreActions()
+	if err != nil {
+		return errors.Wrap(err, "error getting pre-restore actions")
+	}
+
+	restoreLog.Info("Getting PostRestore actions")
+	postRestoreActions, err := pluginManager.GetPostRestoreActions()
+	if err != nil {
+		return errors.Wrap(err, "error getting post-restore actions")
+	}
+
 	backupFile, err := downloadToTempFile(restore.Spec.BackupName, info.backupStore, restoreLog)
 	if err != nil {
 		return errors.Wrap(err, "error downloading backup")
@@ -476,8 +488,25 @@ func (c *restoreController) runValidatedRestore(restore *api.Restore, info backu
 		VolumeSnapshots:  volumeSnapshots,
 		BackupReader:     backupFile,
 	}
+
+	for _, preRestoreAction := range preRestoreActions {
+		err := preRestoreAction.Execute(restoreReq.Restore)
+		if err != nil {
+			return errors.Wrap(err, "error executing pre-restore action")
+		}
+	}
+
 	restoreWarnings, restoreErrors := c.restorer.Restore(restoreReq, actions, c.snapshotLocationLister, pluginManager)
 	restoreLog.Info("restore completed")
+
+	for _, postRestoreAction := range postRestoreActions {
+		err := postRestoreAction.Execute(restoreReq.Restore)
+
+		if err != nil {
+			restoreErrors.Velero = append(restoreErrors.Velero, fmt.Sprintf("post-restore action failed!: %v", err))
+			restoreLog.Error(err.Error())
+		}
+	}
 
 	// re-instantiate the backup store because credentials could have changed since the original
 	// instantiation, if this was a long-running restore

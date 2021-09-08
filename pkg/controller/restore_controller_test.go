@@ -545,6 +545,8 @@ func TestProcessQueueItem(t *testing.T) {
 
 			if test.restore != nil {
 				pluginManager.On("GetRestoreItemActions").Return(nil, nil)
+				pluginManager.On("GetPreRestoreActions").Return(nil, nil)
+				pluginManager.On("GetPostRestoreActions").Return(nil, nil)
 				pluginManager.On("CleanupClients")
 			}
 
